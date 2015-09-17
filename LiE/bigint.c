@@ -2,7 +2,7 @@
    safely added to give another |digit| */
 
 #define SHIFT        15
-#define MASK      (digit)MaxDigit
+#define MASK      (_digit)MaxDigit
 
 /*
  *	bigint	*entry2bigint(entry n)
@@ -37,7 +37,7 @@ static void freepair(bigint* a,bigint* b,bigint* z)
 
 bigint *normalize(bigint *a)
 {
-  int size = abs(a->size); digit *d = a->data + size - 1;
+  int size = abs(a->size); _digit *d = a->data + size - 1;
 
   while (size > 0 && *d-- == 0) size--;
   a->size = (a->size < 0) ? -size : size;
@@ -60,7 +60,7 @@ bigint *entry2bigint(entry n)
 entry bigint2entry(bigint *num)
 {
   int size = abs(num->size); twodigits result = 0;
-  digit *d = num->data + size - 1;
+  _digit *d = num->data + size - 1;
 
   if (size > 3 || size == 3 && *d > 1)
     error("Integer too big\n");
@@ -69,7 +69,7 @@ entry bigint2entry(bigint *num)
   return (num->size < 0) ? -(entry)result : (entry)result;
 }
 
-int cmp1(bigint* a,digit n)
+int cmp1(bigint* a,_digit n)
 {
   int m = a->size;
 
@@ -81,7 +81,7 @@ int cmp1(bigint* a,digit n)
 
 int cmp(bigint* a, bigint* b)
 {
-  int a_size = a->size, size; digit *d, *e;
+  int a_size = a->size, size; _digit *d, *e;
 
   if (a_size < b->size) return -1;
   if (a_size > b->size) return 1;
@@ -92,11 +92,11 @@ int cmp(bigint* a, bigint* b)
   return (a_size > 0) == (*d < *e) ? -1 : 1;
 }
 
-bigint *mul1add(bigint* b,digit n,digit m)
+bigint *mul1add(bigint* b,_digit n,_digit m)
 {
 /* Side effect b */
   int i, size = abs(b->size);
-  digit *d; twodigits n2 = n, t = m;
+  _digit *d; twodigits n2 = n, t = m;
 
   d = b->data;
   for (i = size; i > 0; i--) {
@@ -112,18 +112,18 @@ bigint *mul1add(bigint* b,digit n,digit m)
   return b;
 }
 
-digit div1(bigint* b,digit n)/* Side effect in b */
-{ digit* d; twodigits t = 0;
+_digit div1(bigint* b,_digit n)/* Side effect in b */
+{ _digit* d; twodigits t = 0;
   int size = abs(b->size);
 
-  if (size == 0) return (digit)0;
+  if (size == 0) return (_digit)0;
   d = b->data + size - 1;
   for (; size > 0; size--) {
     t = (t << SHIFT) + *d;
     *d-- = t / n; t %= n;
   }
   (void)normalize(b);
-  return (digit)t;
+  return (_digit)t;
 }
 
 bigint *mult(bigint *a, bigint* b) /* No side effect in a */
@@ -137,7 +137,7 @@ bigint *mult(bigint *a, bigint* b) /* No side effect in a */
   for (i = 0; i < prod->size; i++) prod->data[i] = 0;
   for (i = 0; i < size_a; i++) {
     twodigits carry = 0, f = a->data[i];
-    int j; digit *d = prod->data + i;
+    int j; _digit *d = prod->data + i;
 
     for (j = 0; j < size_b; j++) {
       carry += *d + b->data[j] * f;
@@ -160,7 +160,7 @@ bigint *divq(bigint *a,bigint *b) /* Side effect in a */
 
 {
   int size_a = abs(a->size), size_b = abs(b->size);
-  bigint  *a_org = a, *quo; digit bl, d;
+  bigint  *a_org = a, *quo; _digit bl, d;
   int j, k;
 
   if (size_b == 0) error("Division by zero\n");
@@ -183,7 +183,7 @@ bigint *divq(bigint *a,bigint *b) /* Side effect in a */
   bl = b->data[size_b-1];
   quo = mkbigint(size_a - size_b + 1);
   for (j = size_a, k = size_a - size_b; k >= 0; j--, k--) {
-    digit aj = (j >= size_a) ? 0 : a->data[j];
+    _digit aj = (j >= size_a) ? 0 : a->data[j];
     twodigits aj2 = ((twodigits)aj << SHIFT) + a->data[j-1], q;
     entry carry = 0L; int i;
  
@@ -302,7 +302,7 @@ static	bigint* x_add(a,b) bigint* a,* b;
   int size_a= abs(a->size), size_b= abs(b->size);
   bigint *z;
   int i;
-  digit carry= 0;
+  _digit carry= 0;
   
   /* Ensure a is the larger of the two: */
   if (size_a < size_b) {
@@ -350,7 +350,7 @@ static bigint* x_sub(a, b) bigint *a, *b;
   bigint *z;
   int i;
   int sign= 1;
-  digit borrow= 0;
+  _digit borrow= 0;
   
   /* Ensure a is the larger of the two: */
   if (size_a < size_b) {
@@ -421,8 +421,8 @@ object power(object a, bigint* b, object unit, f2object f)
 { int size_b= abs(b->size);
   object z = unit;
   int i;
-  for (i= 0; i < size_b; ++i) /* for digits from least to most significant */
-  { digit bi= b->data[i]; int j;
+  for (i= 0; i < size_b; ++i) /* for _digits from least to most significant */
+  { _digit bi= b->data[i]; int j;
     for (j= 0; j < SHIFT; ++j) /* and for all bits of digit in same order */
     { setshared(a);
       if ((bi&1)!=0) z=f(z,a); /* include $a^{2^{SHIFT*i+j}}$ into |z| */
@@ -445,9 +445,9 @@ object power(object a, bigint* b, object unit, f2object f)
 static void errorc() { error("System: Pointer to bigint is NULL.\n"); }
 
 #ifdef __STDC__
-void addc(bigint** b,digit n)
+void addc(bigint** b,_digit n)
 #else
-void addc(b,n) bigint **b; digit n;
+void addc(b,n) bigint **b; _digit n;
 #endif
 {
     if (!(*b)) errorc();
@@ -456,9 +456,9 @@ void addc(b,n) bigint **b; digit n;
 }
 
 #ifdef __STDC__
-void mulc(bigint** b,digit m)
+void mulc(bigint** b,_digit m)
 #else
-void mulc(b,m) bigint **b; digit m;
+void mulc(b,m) bigint **b; _digit m;
 #endif
 {
     if (!(*b)) errorc();
@@ -467,9 +467,9 @@ void mulc(b,m) bigint **b; digit m;
 }
 
 #ifdef __STDC__
-void divc(bigint** b,digit n)
+void divc(bigint** b,_digit n)
 #else
-void divc(b,n) bigint **b; digit n;
+void divc(b,n) bigint **b; _digit n;
 #endif
 {
     if (!(*b)) errorc();

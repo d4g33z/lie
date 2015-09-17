@@ -29,7 +29,7 @@ typedef struct
   objtype type; reftype nref;
 
   short allocsize, size;
-  digit *data;
+  _digit *data;
 } bigint;
 
 typedef struct
@@ -37,8 +37,8 @@ typedef struct
   
   objtype type; reftype nref;
 
-  index ncomp;
-  index size;
+  _index ncomp;
+  _index size;
   entry *compon;
 } vector;
 
@@ -47,8 +47,8 @@ typedef struct
   
   objtype type; reftype nref;
 
-  index nrows, ncols;
-  index rowsize;
+  _index nrows, ncols;
+  _index rowsize;
   entry **elm;
   bigint **null;
 } matrix;
@@ -58,8 +58,8 @@ typedef struct
   
   objtype type; reftype nref;
 
-  index nrows, ncols;
-  index rowsize;
+  _index nrows, ncols;
+  _index rowsize;
   entry **elm;
   bigint **coef;
 } poly;
@@ -82,7 +82,7 @@ typedef struct
   
   objtype type; reftype nref;
 
-  index ncomp, toraldim;
+  _index ncomp, toraldim;
   simpgrp **liecomp;
 } group;
 
@@ -91,7 +91,7 @@ typedef struct
   
   objtype type; reftype nref;
 
-  index len;
+  _index len;
   char *string;
 } tekst;
 

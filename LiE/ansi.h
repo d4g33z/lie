@@ -3,10 +3,10 @@
 bigint* normalize(bigint* a);		   /* return a=normal(a) */
 bigint* entry2bigint(entry n);
 entry bigint2entry(bigint* num);
-int cmp1(bigint* a, digit n);
+int cmp1(bigint* a, _digit n);
 int cmp(bigint* a, bigint* b);
-bigint* mul1add(bigint* b, digit n, digit m); /* return b=b*n+m */
-digit div1(bigint* b,digit n);		    /* b/=n; return b%n */
+bigint* mul1add(bigint* b, _digit n, _digit m); /* return b=b*n+m */
+_digit div1(bigint* b,_digit n);		    /* b/=n; return b%n */
 bigint* mult(bigint* a, bigint* b);
 bigint* divq(bigint* a, bigint* b);		    /* a%=b; return a/b */
 bigint* quotient(bigint* a, bigint* b);
@@ -18,9 +18,9 @@ bigint* norm(bigint* z);
 bigint* add(bigint* a, bigint* b);
 bigint* sub(bigint* a, bigint* b);
 object power(object a, bigint* b, object unit, f2object f);
-void addc(bigint** a, digit b);
-void mulc(bigint** a, digit b);
-void divc(bigint** a, digit b);
+void addc(bigint** a, _digit b);
+void mulc(bigint** a, _digit b);
+void divc(bigint** a, _digit b);
 
 /* binmat.c */
  void Objectwrite(object m, group* g, char *t);
@@ -53,8 +53,8 @@ void restore_state(void);
 void init_state(void);
 void print_state(void);
 void unmark_sorted(void);
-cmp_tp height_incr(entry* v, entry* w, index len);
-cmp_tp height_decr(entry* v, entry* w, index len);
+cmp_tp height_incr(entry* v, entry* w, _index len);
+cmp_tp height_decr(entry* v, entry* w, _index len);
 
 /* output.c */
 void monitor_cmd(char* file_arg);
@@ -66,7 +66,7 @@ void print_runtime(void);
 void registrate_cpu(void);
 
 #ifdef __GNUC__
-void error(char* format, ...)    /*  __attribute__ ((noreturn))*/
+void error(char* format, ...)      __attribute__ ((noreturn))
                                    __attribute__ ((format (printf,1,2)));
 void fatal(char* format, ...)      __attribute__ ((noreturn))
                                    __attribute__ ((format (printf,1,2)));
@@ -138,7 +138,7 @@ poly* Branch(poly* p, entry** m, object G);
 poly* Collect(poly* p, matrix* iresmat, entry d, object g);
 
 /* box/centr.c */
-index isolcomp(matrix* ma, index i);
+_index isolcomp(matrix* ma, _index i);
 matrix* Centroots(matrix* mm);
 object Centrtype(matrix* h);
 
@@ -168,59 +168,59 @@ object Factor(bigint* num); /* static5.c */
 #include "grpdata.h"
 
 /* box/lr.c */
-vector* To_Part_v(entry* wt,index l);
-matrix* To_Part_m(entry** wts,index n,index l);
+vector* To_Part_v(entry* wt,_index l);
+matrix* To_Part_m(entry** wts,_index n,_index l);
 poly* To_Part_p(poly* p);
-vector* From_Part_v(entry* wt,index l);
-matrix* From_Part_m(entry** wts,index n,index l);
+vector* From_Part_v(entry* wt,_index l);
+matrix* From_Part_m(entry** wts,_index n,_index l);
 poly* From_Part_p(poly* p);
-poly* LR_tensor_irr(entry* lambda, entry* mu, index n);
+poly* LR_tensor_irr(entry* lambda, entry* mu, _index n);
 poly* LR_tensor(poly* p,poly* q);
 
 /* box/matrix.c */
-void copyrow(entry* v,entry* w,index n); /* ubiquitous, as are following: */
-boolean eqrow(entry* v,entry* w,index n);
-void add_xrow_to(entry* v,entry f,entry* w,index n);
-void addrow(entry* v,entry* w,entry* x,index n);
-void subrow(entry* v,entry* w,entry* x,index n);
-boolean pos_subrow(entry* v,entry* w,entry* x,index n);
-entry inprow(entry* v,entry* w,index n);
+void copyrow(entry* v,entry* w,_index n); /* ubiquitous, as are following: */
+boolean eqrow(entry* v,entry* w,_index n);
+void add_xrow_to(entry* v,entry f,entry* w,_index n);
+void addrow(entry* v,entry* w,entry* x,_index n);
+void subrow(entry* v,entry* w,entry* x,_index n);
+boolean pos_subrow(entry* v,entry* w,entry* x,_index n);
+entry inprow(entry* v,entry* w,_index n);
 matrix* Transpose(matrix* m); /* static1.c */
-void mulmatmatelm(entry** a,entry** b,entry** c,index l,index m,index n); 
-void mulvecmatelm(entry* v,entry** b,entry* w,index m,index n); 
-void mulmatvecelm(entry** a,entry* v,entry* w,index m,index n); 
+void mulmatmatelm(entry** a,entry** b,entry** c,_index l,_index m,_index n); 
+void mulvecmatelm(entry* v,entry** b,entry* w,_index m,_index n); 
+void mulmatvecelm(entry** a,entry* v,entry* w,_index m,_index n); 
 matrix* Matmult(matrix* a, matrix* b);
 matrix* extendmat(matrix* old);
 matrix* copymatrix(matrix* old);
 matrix* Blockmat(matrix* a,matrix* b);
-void printarr(entry* a,index r); /* norm.c */
+void printarr(entry* a,_index r); /* norm.c */
 
 /* box/orbit.c */
-matrix* Orbit(index limit, vector* v, entry** m, index n);
+matrix* Orbit(_index limit, vector* v, entry** m, _index n);
 
 #include "plethysm.h"
 
 /* box/sorting.w */
-cmp_tp lex_incr(entry* v, entry* w, index len);
-cmp_tp lex_decr(entry* v, entry* w, index len);
-cmp_tp deg_incr(entry* v, entry* w, index len);
-cmp_tp deg_decr(entry* v, entry* w, index len);
-cmpfn_tp set_ordering(cmpfn_tp cmp, index n, object g);
+cmp_tp lex_incr(entry* v, entry* w, _index len);
+cmp_tp lex_decr(entry* v, entry* w, _index len);
+cmp_tp deg_incr(entry* v, entry* w, _index len);
+cmp_tp deg_decr(entry* v, entry* w, _index len);
+cmpfn_tp set_ordering(cmpfn_tp cmp, _index n, object g);
 void swap(entry* x,entry* y);
-void sortrow(entry* a, index n);
+void sortrow(entry* a, _index n);
 void swap_rows(entry** x,entry** y); /* centr.c */
-void swap_terms(entry** w, bigint** coef, index i, index j); /* altdom.c */
+void swap_terms(entry** w, bigint** coef, _index i, _index j); /* altdom.c */
 void Qksortmat(matrix* m, cmpfn_tp criterion);
 matrix* Unique(matrix* m, cmpfn_tp criterion);
 poly* Reduce_pol(poly* p);
-index searchterm(poly* p, entry* t); /* altdom.c, decomp.c */
+_index searchterm(poly* p, entry* t); /* altdom.c, decomp.c */
 
 #include "symg.h"
 #include "tensor.h"
 
 /* box/weyl.c */
-void simp_w_refl(entry* w,index i,simpgrp* g); /* dominant.c */
-void w_refl(entry* almbda, index wi);
+void simp_w_refl(entry* w,_index i,simpgrp* g); /* dominant.c */
+void w_refl(entry* almbda, _index wi);
 void Waction(entry* lambda, vector* word);
 void Wrtaction(entry* root, vector* word);
 matrix* simp_Weylmat(vector* w, simpgrp* g); /* weyl.c, weylloop.c */

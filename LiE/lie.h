@@ -3,12 +3,10 @@
 typedef int boolean;
 typedef char* string;
 typedef long entry; /* see also |MaxEntry| and |MinEntry| */
-typedef long index;
+typedef long _index;
 typedef short Short;
-#ifndef Py_LONGINTREPR_H
-typedef unsigned short digit; /* see also |MaxDigit| */
+typedef unsigned short _digit; /* see also |MaxDigit| */
 typedef unsigned long twodigits;
-#endif
 
 #include "memtype.h"
 #include "nodetype.h"
@@ -28,7 +26,7 @@ typedef struct { strtype name; objtype type;} nametype;
 typedef struct { strtype p[N_PARENTS]; short n; } par_tp;
 
 typedef int cmp_tp;
-typedef cmp_tp (*cmpfn_tp) (entry*,entry*,index);
+typedef cmp_tp (*cmpfn_tp) (entry*,entry*,_index);
 
 
 #include  <setjmp.h>
@@ -57,8 +55,8 @@ typedef cmp_tp (*cmpfn_tp) (entry*,entry*,index);
 #define MinEntry 		LONG_MIN
 #define MaxDigit 		((1<<15)-1) 
 #define max_obj_size 		UINT_MAX 
-#define MAXPTRS_DFLT 		99999
-#define GCCRIT 		50000 \
+#define MAXPTRS_DFLT 		99999 
+#define GCCRIT 		1000 \
   
 #define MAXNODES_DFLT 	9999 
 #define LINELENGTH   80 
@@ -82,7 +80,7 @@ typedef cmp_tp (*cmpfn_tp) (entry*,entry*,index);
 #define is_int(t) ((t)==INTEGER ||(t)==BIGINT)
 #define Max(a,b)  ((a)>=(b)?(a):(b))
 #define Min(a,b)  ((a)<=(b)?(a):(b))
-#define mul1(num,d)	mul1add(num,(digit)(d),(digit)0)
+#define mul1(num,d)	mul1add(num,(_digit)(d),(_digit)0)
 #define private_pol(p)  ( isshared(p) ? copypoly(p) : p )
 #define C0(name,f,res) {res,OPERATOR,name,1,f,0,0},
 #define C1(name,f,res,arg1) {arg1,DUMMY,NULL,0,NULL,0,0}, {res,OPERATOR,name,2,f,-1,0},
@@ -168,7 +166,7 @@ extern strtype fun_name;
 
 extern int line; /* line number needed for error messages */
 
-extern index nrefl;
+extern _index nrefl;
 
 extern boolean alloc_gc;
   /* whether to use |allocmem| rather than |mlalloc| in |creatsym| */
@@ -185,7 +183,3 @@ extern cmpfn_tp cmpfn;
 int no_terminal(FILE* f);
 
 
-
-/* <lie-py> */
-void gc_print_obj(object obj);
-/* </lie-py> */

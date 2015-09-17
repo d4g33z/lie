@@ -34,7 +34,7 @@ write_mat(Resmat(A5,A2A2),A5,"A2A2.1")
 
 write_string("A5,B3,A1A4,A2A3"+eqrank(A6),A6, "MAXSUB")
 write_mat(Resmat(A6,A5),A6,"A5.1")
-write_mat(Resmat(A6,B3),A6,"B3.1")
+write_mat(Resmat(A6,B3),A6,"B6.1")
 write_mat(Resmat(A6,A1A4),A6,"A1A4.1")
 write_mat(Resmat(A6,A2A3),A6,"A2A3.1")
 
@@ -45,7 +45,7 @@ write_mat(Resmat(A7,D4),A7,"D4.1")
 write_mat(Resmat(A7,A1A3),A7,"A1A3.1")
 write_mat(Resmat(A7,A1A5),A7,"A1A5.1")
 write_mat(Resmat(A7,A2A4),A7,"A2A4.1")
-write_mat(Resmat(A7,A3A3),A7,"A3A3.1")
+write_mat(Resmat(A7,A3A3),A6,"A3A3.1")
 
 write_string("A7,B4,A2A2,A1A6,A2A5,A3A4"+eqrank(A8),A8, "MAXSUB")
 write_mat(Resmat(A8,A7),A8,"A7.1")
@@ -88,7 +88,7 @@ write_mat(Resmat(C2,A1),C2,"A1.1")
 
 write_string("A1,A1A1"+eqrank(C3),C3, "MAXSUB")
 write_mat(Resmat(C3,A1),C3,"A1.1")
-write_mat(Resmat(C3,A1A1),C3,"A1A1.1")
+write_mat(Resmat(C3,A1A1),C2,"A1A1.1")
 
 write_string("A1,A1A1A1"+eqrank(C4),C4, "MAXSUB")
 write_mat(Resmat(C4,A1),C4,"A1.1")

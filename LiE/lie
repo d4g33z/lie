@@ -1,0 +1,2 @@
+LD=/home/jeff/Workspace/Think/think-games/lie.git/LiE
+exec $LD/Lie.exe initfile $LD

@@ -14,7 +14,7 @@ void err_Printf(char *format, ...)
   if (am_monitor) vfprintf(monfile, format, ap);
   va_end(ap);
 }
-/*
+
 void error(char *format, ...)
 {
     symblst	    list;
@@ -38,10 +38,10 @@ void error(char *format, ...)
     if (fun_name)
 	Printf("[in function %s ]\n", name_tab[fun_name]);
     for (list = top_definitions; list!=NULL; list = list->next)
-	/* Recover symbol table * / 
+	/* Recover symbol table */
     {	if (list->class == FUNCTION_COPIED) list->class = FUNCTION;
 	if (list->next && list->next->class == DUMMY)
-          list->next = list->next->next;	/* Remove sym * /
+	    list->next = list->next->next;	/* Remove sym */
     }
     if (repair_obj) {
 	setshared(repair_obj); 
@@ -50,10 +50,10 @@ void error(char *format, ...)
     if (cur_in==stdin)
       clear_input();
     else
-      do exit_input_file(parsing); while (cur_in!=stdin); /* pop input files * /
+      do exit_input_file(parsing); while (cur_in!=stdin); /* pop input files */
     longjmp(envbuf, -1);
 }
-*/
+
 void fatal(char *format, ...)
 {
     va_list ap;

@@ -1,6 +1,6 @@
 
 
-void wt_init(index r);
+void wt_init(_index r);
 void wt_ins(entry* p, bigint* c, boolean neg);
 poly* wt_collect(void);
 

@@ -1,12 +1,11 @@
 srcdir     :=$(shell pwd)
 
-CFLAGS= -g
+CFLAGS= -O -fPIC
 fixed-flags = -I$(srcdir) -I$(srcdir)/box
-all-C-flags:= -ansi -D_ANSI_SOURCE $(fixed-flags) $(CFLAGS) -fPIC
+all-C-flags:= -ansi $(fixed-flags) $(CFLAGS)
 non-ansi-flags :=  $(fixed-flags) $(CFLAGS)
-SnowLeopard-flags= -m32 -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5
 
-CC = gcc $(SnowLeopard-flags) # some compiler for ANSI/ISO C
+CC = gcc # some compiler for ANSI/ISO C
 
 # These settings should also be used in subdirectories:
 export CC all-C-flags fixed-flags CFLAGS
@@ -18,7 +17,7 @@ export CC all-C-flags fixed-flags CFLAGS
 
 common_objects=lexer.o parser.o\
  non-ANSI.o bigint.o binmat.o creatop.o gettype.o getvalue.o\
- init.o learn.o main.o mem.o node.o onoff.o output.o poly.o sym.o\
+ init.o learn.o main.o mem.o node.o onoff.o output.o poly.o sym.o
 
 objects=$(common_objects) print.o getl.o
 GAP_objects=$(common_objects) gapprint.o gapgetl.o

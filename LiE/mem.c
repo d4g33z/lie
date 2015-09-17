@@ -6,8 +6,7 @@
 
 
 long chunks = 0; /* number of objects currently allocated */
-/*static void **ptr;*/ /* now globally defined */
-void **ptr;
+static void **ptr;
 unsigned long maxptrs=0; /* initialised elsewhere */
 
 static boolean *marked;
@@ -17,33 +16,6 @@ static unsigned long hash_mod;
 
 static simpgrp* simpgrplist=NULL;
 
-/* <lie-py> */
-static unsigned int *pyobj;
-
-void setpyobj(object obj) {
-  long i;
-  i = findaddr(obj);
-  pyobj[i]++;
-}
-
-void clrpyobj(object obj) {
-  long i;
-  i = findaddr(obj);
-  if(!pyobj[i]) {
-    gc_print_obj(obj);
-    fatal("pyobj underflow!");
-  }
-  pyobj[i]--;
-}
-
-void markpyobj(void) {
-  int i;
-  for (i=0; i<maxptrs; i++) {
-    if (ptr[i]!=NULL && pyobj[i])
-      mark(ptr[i]);
-  }
-}
-/* </lie-py> */
 
 void initmem(void)
 { long i;
@@ -51,12 +23,7 @@ void initmem(void)
   if (ptr==NULL) fatal("Insufficient memory to allocate object table.\n");
   marked = (boolean*) malloc(sizeof(boolean) * maxptrs);
   if (marked==NULL) fatal("Insufficient memory to allocate mark table.\n");
-  /* <lie-py> */
-  pyobj = (unsigned int*) malloc(sizeof(unsigned int) * maxptrs);
-  if (pyobj==NULL) fatal("Insufficient memory to allocate pyobj table.\n");
-  /* </lie-py> */
-  for (i=0; i<maxptrs; i++) { ptr[i]=NULL; marked[i]=false;
-    /* <lie-py> */ pyobj[i]=0; /* </lie-py> */ }
+  for (i=0; i<maxptrs; i++) { ptr[i]=NULL; marked[i]=false; }
   gccrit=maxptrs-GCCRIT;
   hash_mod = (maxptrs-2)|0x1; /* slightly less than |maxptrs|, and odd */
 }
@@ -64,9 +31,6 @@ void initmem(void)
 void newmem(long newval)
 { unsigned long maxptrs0=maxptrs;
   void** ptr0=ptr; boolean* marked0=marked; /* handles for old values */
-  /* <lie-py> */
-  unsigned int* pyobj0=pyobj;
-  /* </lie-py> */
   if ((maxptrs=newval)<=GCCRIT)
   
   { maxptrs=maxptrs0;
@@ -74,6 +38,7 @@ void newmem(long newval)
          ,(long)maxptrs,(long)newval);
   }
   initmem();
+  
   { long k;
     for (k=0; k<maxptrs0; k++)
       if (ptr0[k]!=NULL) /* copy all non-null pointers */
@@ -91,19 +56,11 @@ void newmem(long newval)
                  }
         ptr[h]=ptr0[k]; /* copy pointer to empty slot */
         marked[h]=false; /* make new pointer unmarked */
-        /* <lie-py> */
-        if (pyobj0[k]) {
-          pyobj[h]=pyobj0[k];
-        }
-        /* </lie-py> */
       }
   }
   if (!redirected_input)
     Printf("New object table of size %ld.\n",(long)maxptrs);
   free(ptr0); free(marked0); /* release the old tables */
-  /* <lie-py> */
-  free(pyobj0);
-  /* </lie-py> */
 }
 
 long findaddr0(void* p)
@@ -124,9 +81,6 @@ long findaddr(void* p)
       if (ptr[h]==p) return h;  else if (++h>=maxptrs) h=0;
   }
      /* try to give a description of this stranger */
-
-  c_print_objs();
-  gc_print_obj((object) p);
   fatal(" findaddr: called with unknown address %p %s\n", p, type_tag(p));
   return -1;
 }
@@ -179,14 +133,9 @@ void* allocmem(size_t size)
       h=hash(result);
       for (i=0; i<maxptrs; i++)
         if (ptr[h]==NULL) break;  else if (++h>=maxptrs) h=0;
-      if (i==maxptrs) {
-        /*error("Object table overflow (%ld). Try increasing 'maxobjects'.\n"
-          ,chunks); */
-        /* we're just going to dynamically grow the object table */
-        newmem(3*maxptrs/2); /* increase maxptrs by 50% */
-        free(result);
-        return allocmem(size); /* safe to call again now */
-      }
+      if (i==maxptrs)
+        error("Object table overflow (%ld). Try increasing 'maxobjects'.\n"
+             ,chunks);
     }
     ignore_intr(); /* don't interrupt while updating |ptr| */
     ptr[h]=result; ++chunks; allow_intr();
@@ -204,7 +153,7 @@ void freem(void* addr)
 }
 
 void freep(poly* addr)
-{ index j;
+{ _index j;
   for (j=0; j<addr->nrows; j++)
   { object c=(object) addr->coef[j];
     assert(isshared(c)); clrshared(c); freemem(c);
@@ -212,7 +161,7 @@ void freep(poly* addr)
   freemem(addr);
 }
 
-entry* mkintarray(index n)
+entry* mkintarray(_index n)
 { if (n>max_obj_size/sizeof(entry))
     error("Cannot create internal array of %ld entries", (long)n);
   return alloc_array(entry,n);
@@ -230,17 +179,18 @@ intcel* (mkintcel)(entry n  with_line_and_file)
 bigint* (mkbigint)(long size  with_line_and_file)
 {
   bigint *result;
+
   if (size>SHRT_MAX) error("Big integer too big\n");
-  result = (bigint*)allocmem(sizeof(bigint)+size*sizeof(digit));
+  result = (bigint*)allocmem(sizeof(bigint)+size*sizeof(_digit));
   set_common_fields(result,BIGINT);
   result->allocsize = result->size = size;
-  result->data = (digit *)&result[1];
+  result->data = (_digit *)&result[1];
   return result;
 }
 
 bigint* copybigint(bigint* from, bigint* to)
 {
-  int n = abs(from->size); digit *f, *t;
+  int n = abs(from->size); _digit *f, *t;
   if (to==NULL) to = mkbigint(n);
   else if (to->allocsize<n) { freemem(to); to=mkbigint(n); }
   to->size = from->size;
@@ -255,7 +205,7 @@ bigint *extendbigint(bigint* old)
   copybigint(old, new); freemem(old); return new;
 }
 
-vector* (mkvector)(index n  with_line_and_file)
+vector* (mkvector)(_index n  with_line_and_file)
 {
     vector *v;
     if (n > (max_obj_size-sizeof(vector))/sizeof(entry))
@@ -272,9 +222,9 @@ vector* copyvector(vector *src)
   return result;
 }
 
-matrix* (mkmatrix)(index r,index c  with_line_and_file)
+matrix* (mkmatrix)(_index r,_index c  with_line_and_file)
 {
-  index i;
+  _index i;
   matrix *m;
   size_t size=sizeof(matrix)
     + (r==0 ? 1 : r)*(sizeof(bigint*)+sizeof(entry*))
@@ -293,9 +243,9 @@ m->rowsize = m->nrows = r; m->ncols = c;
   return m;
 }
 
-poly* (mkpoly)(index r,index c  with_line_and_file)
+poly* (mkpoly)(_index r,_index c  with_line_and_file)
 {
-  index i;
+  _index i;
   poly  *p; size_t size;
   boolean  is_null_poly = false;
 
@@ -324,13 +274,13 @@ p->rowsize = p->nrows = r; p->ncols = c;
 }
 
 matrix* copymatrix(matrix* old)
-{ index i; matrix* new = mkmatrix(old->nrows,old->ncols);
+{ _index i; matrix* new = mkmatrix(old->nrows,old->ncols);
   for (i=0; i<old->nrows; ++i) copyrow(old->elm[i],new->elm[i],old->ncols);
   return new;
 }
 
 poly* copypoly(poly* old)
-{ index i; poly* new = mkpoly(old->nrows,old->ncols);
+{ _index i; poly* new = mkpoly(old->nrows,old->ncols);
   for (i=0; i<old->nrows; ++i)
   { new->coef[i]=old->coef[i], setshared(new->coef[i]);
     copyrow(old->elm[i],new->elm[i],old->ncols);
@@ -339,7 +289,7 @@ poly* copypoly(poly* old)
 }
 
 matrix* extendmat(matrix* old)
-{ index i;
+{ _index i;
   matrix* new= mkmatrix(3*old->rowsize/2+1, old->ncols);
   for (i=0; i<old->nrows; ++i) copyrow(old->elm[i],new->elm[i],old->ncols);
   new->nrows=old->nrows;
@@ -347,7 +297,7 @@ matrix* extendmat(matrix* old)
 }
 
 poly* extendpoly(poly* old)
-{ index i; poly* new=mkpoly(3*old->rowsize/2+1,old->ncols);
+{ _index i; poly* new=mkpoly(3*old->rowsize/2+1,old->ncols);
   for (i=0; i<old->nrows; ++i)
   { new->coef[i]=old->coef[i],setshared(new->coef[i]);
     copyrow(old->elm[i],new->elm[i],old->ncols);
@@ -356,7 +306,7 @@ poly* extendpoly(poly* old)
   freepol(old); return new;
 }
 
-simpgrp* (mksimpgrp)(char type, index rank  with_line_and_file)
+simpgrp* (mksimpgrp)(char type, _index rank  with_line_and_file)
 {
   simpgrp *grp, **loc;
   
@@ -374,7 +324,7 @@ simpgrp* (mksimpgrp)(char type, index rank  with_line_and_file)
   return *loc = grp; /* add group to end of |simpgrplist| and return it */
 }
 
-group* (mkgroup)(index ncomp  with_line_and_file)
+group* (mkgroup)(_index ncomp  with_line_and_file)
 {
     group *grp;
     grp = (group*) allocmem(sizeof(group)+ncomp*sizeof(simpgrp*));
@@ -385,7 +335,7 @@ group* (mkgroup)(index ncomp  with_line_and_file)
     return grp;
 }
 
-tekst* (mktekst)(index n  with_line_and_file)
+tekst* (mktekst)(_index n  with_line_and_file)
 {
   tekst *t;
   t = (tekst*)allocmem(sizeof(tekst)+n+1);
@@ -398,7 +348,7 @@ tekst* (mktekst)(index n  with_line_and_file)
 
 tekst* copytekst(tekst* o)
 {
-  index n = o->len;
+  _index n = o->len;
   tekst *result = mktekst(n);
   strncpy(result->string,o->string,n);
   return result;
@@ -416,7 +366,7 @@ object cpobject(object o)
   case MATRIX: return (object)copymatrix(&o->m);
   case POLY:   return (object)copypoly(&o->pl);
   case GROUP:  
-               { group* g=&o->g; index i,n=g->ncomp;
+               { group* g=&o->g; _index i,n=g->ncomp;
                  group* result=mkgroup(n);
                  result->toraldim=g->toraldim;
                  for (i=0; i<n; i++) result->liecomp[i] = g->liecomp[i];
@@ -495,9 +445,6 @@ void gc(void)
       last_v=v;
     }
     mark_tree();
-    /* <lie-py> */
-    markpyobj();
-    /* <lie-py> */
   }
   for (i = 0; i<maxptrs; i++)
     if (marked[i]) marked[i] = false;
@@ -514,7 +461,6 @@ void for_all_objects(void (*f)(object))
 void printobjectinfo(object obj) {}
 
 void share_error(object o)
-{
-  fatal("Reference count underflow");
+{  fatal("Reference count underflow");
 }
 
